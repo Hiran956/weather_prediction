@@ -86,50 +86,32 @@ plt.legend()
 plt.show()
 
 import joblib
-joblib.dump(model, "weather_model.pkl")
 
-model.save("weather_model.h5")
-
-from flask import Flask, request, jsonify
-import joblib
-import numpy as np
-
-app = Flask(__name__)
-model = joblib.load("weather_model.pkl")
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    data = request.json  # Receive JSON input
-    features = np.array(data['features']).reshape(1, -1)  # Convert to numpy array
-    prediction = model.predict(features)[0]  # Make prediction
-    return jsonify({'prediction': prediction})
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-!pip install streamlit
+# Save the trained model
+joblib.dump(model, 'weather_model.joblib')
 
 import streamlit as st
 import joblib
+import numpy as np
 
 # Load the trained model
-model = joblib.load("weather_model.pkl")
+model = joblib.load('weather_model.joblib')
 
-st.title("Weather Prediction App")
+# Streamlit UI
+st.title("🌦️ Weather Prediction App")
+st.write("Enter weather conditions to predict the temperature.")
 
-temperature = st.number_input("Enter Temperature (°C):")
-humidity = st.number_input("Enter Humidity (%):")
-pressure = st.number_input("Enter Pressure (hPa):")
+# User inputs
+humidity = st.number_input("Humidity (%)", min_value=0.0, max_value=100.0)
+pressure = st.number_input("Pressure (hPa)", min_value=900.0, max_value=1100.0)
+wind_speed = st.number_input("Wind Speed (m/s)", min_value=0.0, max_value=50.0)
 
-if st.button("Predict"):
-    features = [[temperature, humidity, pressure]]
-    prediction = model.predict(features)
-    st.write(f"Predicted Weather Condition: {prediction}")
+# Prediction
+if st.button("Predict Temperature"):
+    input_data = np.array([[humidity, pressure, wind_speed]])  # Adjust features
+    prediction = model.predict(input_data)
+    st.success(f"🌡️ Predicted Temperature: {prediction[0]:.2f}°C")
 
-!python app.py
-
-!pip install joblib
+!pip install streamlit joblib scikit-learn numpy pandas
 
 !streamlit run app.py
-
-
